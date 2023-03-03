@@ -68,91 +68,22 @@ class MainActivity : ComponentActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             ElevatedButton(onClick = {
-                                if (Build.VERSION.SDK_INT<Build.VERSION_CODES.R){
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "无线调试仅支持Android 11 及以上设备",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                    return@ElevatedButton
-                                }
-                                MainScope().launch {
-                                    if (auto == null) return@launch
-                                    startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
-                                    delay(1000)
-                                    auto?.swipe(
-                                        screenWidth / 2f, screenHeight - 500f,
-                                        screenWidth / 2f, 100f,
-                                        100,
-                                        isZoom = false
-                                    )
-
-                                    auto?.untilFindOne {
-                                        it.text1 == "无线调试"
-                                    }?.ensureClick()
-
-                                    val address = auto?.untilFindOne {
-                                        it.text1?.matches(ipv4Regex) ?: false
-                                    }?.text1
-
-                                    val clipboard =
-                                        getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("ADB debug address", address)
-                                    clipboard.setPrimaryClip(clip)
-
-                                    Log.d(TAG, "address: $address")
-
-                                    auto?.apply {
-                                        back()
-                                        delay(100)
-                                        back()
-                                    }
-
-                                    delay(200)
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "Copied $address",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-
-                                }
+                                startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
                             }) {
-                                Text(text = "复制无线调试地址")
+                                Text(text = "跳转开发者设置")
                             }
                             ElevatedButton(onClick = {
-                                MainScope().launch {
-                                    if (auto == null) return@launch
-                                    startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
-                                    delay(1000)
-
-                                    val job = launch {
-                                        for (i in 0 until 30) {
-                                            auto?.swipe(
-                                                screenWidth / 2f, max(500f, screenHeight - 1000f),
-                                                screenWidth / 2f, 100f,
-                                                100,
-                                                isZoom = false
-                                            )
-                                            delay(100)
-                                        }
-                                    }
-
-                                    auto?.untilFindOne {
-                                        it.text1 == "指针位置"
-                                    }
-
-                                    job.cancel()
-
-                                    auto?.swipe(
-                                        screenWidth / 2f, screenWidth * 1f,
-                                        screenWidth / 2f, screenWidth + 100f,
-                                        10,
-                                        isZoom = false
-                                    )
-
-                                }
+                                jumpToDeveloperSettingsForWirelessDebugging()
+                            }) {
+                                Text(text = "跳转开发者无线调试设置")
+                            }
+                            ElevatedButton(onClick = {
+                                copyTheWirelessDebuggingAddress()
+                            }) {
+                                Text(text = "跳转无线调试并复制ip地址")
+                            }
+                            ElevatedButton(onClick = {
+                                openTheDeveloperOptionsPointerLocation()
                             }) {
                                 Text(text = "打开开发者选项指针位置")
                             }
@@ -161,6 +92,114 @@ class MainActivity : ComponentActivity() {
 
                 }
             }
+        }
+    }
+
+    private fun openTheDeveloperOptionsPointerLocation() {
+        MainScope().launch {
+            if (auto == null) return@launch
+            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+            delay(1000)
+
+            val job = launch {
+                for (i in 0 until 30) {
+                    auto?.swipe(
+                        screenWidth / 2f, max(500f, screenHeight - 1000f),
+                        screenWidth / 2f, 100f,
+                        100,
+                        isZoom = false
+                    )
+                    delay(100)
+                }
+            }
+
+            auto?.untilFindOne {
+                it.text1 == "指针位置"
+            }
+
+            job.cancel()
+
+            auto?.swipe(
+                screenWidth / 2f, screenWidth * 1f,
+                screenWidth / 2f, screenWidth + 100f,
+                10,
+                isZoom = false
+            )
+
+        }
+    }
+
+    private fun copyTheWirelessDebuggingAddress() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            Toast.makeText(
+                this@MainActivity,
+                "无线调试仅支持Android 11 及以上设备",
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return
+        }
+        MainScope().launch {
+            if (auto == null) return@launch
+            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+            delay(1000)
+            auto?.swipe(
+                screenWidth / 2f, screenHeight - 500f,
+                screenWidth / 2f, 100f,
+                100,
+                isZoom = false
+            )
+
+            auto?.untilFindOne {
+                it.text1 == "无线调试"
+            }?.ensureClick()
+
+            val address = auto?.untilFindOne {
+                it.text1?.matches(ipv4Regex) ?: false
+            }?.text1
+
+            val clipboard =
+                getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("ADB debug address", address)
+            clipboard.setPrimaryClip(clip)
+
+            Log.d(TAG, "address: $address")
+
+            Toast.makeText(
+                this@MainActivity,
+                "Copied $address",
+                Toast.LENGTH_SHORT
+            )
+                .show()
+
+        }
+    }
+
+    private fun jumpToDeveloperSettingsForWirelessDebugging() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            Toast.makeText(
+                this@MainActivity,
+                "无线调试仅支持Android 11 及以上设备",
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return
+        }
+        MainScope().launch {
+            if (auto == null) return@launch
+            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+            delay(1000)
+            auto?.swipe(
+                screenWidth / 2f, screenHeight - 500f,
+                screenWidth / 2f, 100f,
+                100,
+                isZoom = false
+            )
+
+            auto?.untilFindOne {
+                it.text1 == "无线调试"
+            }?.ensureClick()
+
         }
     }
 }

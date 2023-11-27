@@ -1,16 +1,12 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 
 package com.wilinz.devtools
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
+import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -18,23 +14,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.wilinz.accessbilityx.device.screenHeight
-import com.wilinz.accessbilityx.device.screenWidth
-import com.wilinz.accessbilityx.ensureClick
-import com.wilinz.accessbilityx.text1
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import com.wilinz.accessbilityx.app.launchAppPackage
+import com.wilinz.devtools.service.AutoAccessibilityService
+import com.wilinz.devtools.service.FloatingWindowService
 import com.wilinz.devtools.ui.theme.DevtoolsTheme
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
+import com.wilinz.devtools.util.PermissionsSettingUtil
+import com.wilinz.devtools.util.toast
 import kotlinx.coroutines.launch
-import kotlin.math.max
 
 class MainActivity : ComponentActivity() {
 
@@ -67,26 +64,57 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+
+
                             ElevatedButton(onClick = {
-                                startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(
+                                        this@MainActivity
+                                    )
+                                ) {
+                                    startService(
+                                        Intent(
+                                            this@MainActivity,
+                                            FloatingWindowService::class.java
+                                        )
+                                    )
+                                } else {
+                                    val intent =
+                                        PermissionsSettingUtil.getAppPermissionsSettingIntent()
+                                    startActivity(intent)
+                                }
                             }) {
-                                Text(text = "跳转开发者设置")
+                                Text(text = "打开悬浮窗")
                             }
+
+                            val scope = rememberCoroutineScope()
+                            val context = LocalContext.current
+
+                            val notificationPermission =
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS) { ok ->
+                                        if (ok) {
+                                            toast("已授权")
+                                        }
+                                    }
+                                } else {
+                                    null
+                                }
+
                             ElevatedButton(onClick = {
-                                jumpToDeveloperSettingsForWirelessDebugging()
+                                notificationPermission?.launchPermissionRequest() ?: run {
+                                    toast("已授权")
+                                }
                             }) {
-                                Text(text = "跳转开发者无线调试设置")
+                                Text(text = "打开通知权限")
                             }
+
                             ElevatedButton(onClick = {
-                                copyTheWirelessDebuggingAddress()
+                                launchAppPackage("com.tencent.mm")
+
                             }) {
-                                Text(text = "跳转无线调试并复制ip地址")
+                                Text(text = "打开微信")
                             }
-                            ElevatedButton(onClick = {
-                                openTheDeveloperOptionsPointerLocation()
-                            }) {
-                                Text(text = "打开开发者选项指针位置")
-                            }
+
                         }
                     }
 
@@ -95,113 +123,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun openTheDeveloperOptionsPointerLocation() {
-        MainScope().launch {
-            if (auto == null) return@launch
-            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
-            delay(1000)
-
-            val job = launch {
-                for (i in 0 until 30) {
-                    auto?.swipe(
-                        screenWidth / 2f, max(500f, screenHeight - 1000f),
-                        screenWidth / 2f, 100f,
-                        100,
-                        isZoom = false
-                    )
-                    delay(100)
-                }
-            }
-
-            auto?.untilFindOne {
-                it.text1 == "指针位置"
-            }
-
-            job.cancel()
-
-            auto?.swipe(
-                screenWidth / 2f, screenWidth * 1f,
-                screenWidth / 2f, screenWidth + 100f,
-                10,
-                isZoom = false
-            )
-
-        }
-    }
-
-    private fun copyTheWirelessDebuggingAddress() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            Toast.makeText(
-                this@MainActivity,
-                "无线调试仅支持Android 11 及以上设备",
-                Toast.LENGTH_SHORT
-            )
-                .show()
-            return
-        }
-        MainScope().launch {
-            if (auto == null) return@launch
-            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
-            delay(1000)
-            auto?.swipe(
-                screenWidth / 2f, screenHeight - 500f,
-                screenWidth / 2f, 100f,
-                100,
-                isZoom = false
-            )
-
-            auto?.untilFindOne {
-                it.text1 == "无线调试"
-            }?.ensureClick()
-
-            val address = auto?.untilFindOne {
-                it.text1?.matches(ipv4Regex) ?: false
-            }?.text1
-
-            val clipboard =
-                getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("ADB debug address", address)
-            clipboard.setPrimaryClip(clip)
-
-            Log.d(TAG, "address: $address")
-
-            Toast.makeText(
-                this@MainActivity,
-                "Copied $address",
-                Toast.LENGTH_SHORT
-            )
-                .show()
-
-        }
-    }
-
-    private fun jumpToDeveloperSettingsForWirelessDebugging() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            Toast.makeText(
-                this@MainActivity,
-                "无线调试仅支持Android 11 及以上设备",
-                Toast.LENGTH_SHORT
-            )
-                .show()
-            return
-        }
-        MainScope().launch {
-            if (auto == null) return@launch
-            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
-            delay(1000)
-            auto?.swipe(
-                screenWidth / 2f, screenHeight - 500f,
-                screenWidth / 2f, 100f,
-                100,
-                isZoom = false
-            )
-
-            auto?.untilFindOne {
-                it.text1 == "无线调试"
-            }?.ensureClick()
-
-        }
-    }
 }
 
 @Composable

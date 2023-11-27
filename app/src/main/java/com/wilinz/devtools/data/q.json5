@@ -1,0 +1,34 @@
+{
+  "question": "塞利格曼是( )国心理学家，主要从事习得性无助、抑郁、乐观主义、悲观主义等方面的研究。",
+  "question_type": "", // 枚举：单选题、判断题、多选题、简答题，如不在这四个选项中，可自定义
+  "options": [
+    {
+      option: "A",
+      content: "美国"
+    },
+    {
+      option: "B",
+      content: "英国"
+    },
+    {
+      option: "C",
+      content: "法国"
+    },
+    {
+      option: "D",
+      content: "德国"
+    },
+
+    // 仅当 question_type 为 判断题
+    {
+      option: "T",
+    },
+    {
+      option: "F",
+    }
+
+  ],
+  "answers": ["A"], // 可选，当 question_type 为 单选题、判断题、多选题
+  "answers_text": "", // 可选，仅当 question_type 为 简答题
+  "question_details": "" // 问题详解
+}

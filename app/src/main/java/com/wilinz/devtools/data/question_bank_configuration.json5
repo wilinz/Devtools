@@ -1,0 +1,35 @@
+[
+  {
+    "name": "言溪题库",
+    "homepage": "https://tk.enncy.cn/",
+    "url": "https://tk.enncy.cn/query",
+    "method": "get",
+    "type": "GM_xmlhttpRequest",
+    "contentType": "json",
+    "data": {
+//      more: true
+//      __show_details__: false,
+      "token": "xxx",
+      "title": "${title}",
+      "options": "${options}",
+      "type": "${type}"
+    },
+    "handler": "return (res)=>res.code === 0 ? [res.data.answer, undefined] : [res.data.question,res.data.answer]"
+  },
+  {
+    "name": "网课小工具题库（GO题）",
+    "homepage": "https://cx.icodef.com/",
+    "url": "https://cx.icodef.com/wyn-nb?v=4",
+    "method": "post",
+    "type": "GM_xmlhttpRequest",
+    "data": {
+      "question": "${title}"
+    },
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": ""
+    },
+    "handler": "return  (res)=> res.code === 1 ? [undefined,res.data] : [res.msg,undefined]"
+  }
+]
+

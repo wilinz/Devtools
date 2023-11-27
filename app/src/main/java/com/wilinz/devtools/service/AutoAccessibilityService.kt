@@ -1,25 +1,11 @@
-package com.wilinz.devtools
+package com.wilinz.devtools.service
 
-import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.GestureDescription
-import android.app.Activity
-import android.app.Service
 import android.content.Intent
-import android.graphics.Path
-import android.graphics.Rect
-import android.os.Build
-import android.os.IBinder
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
-import android.view.accessibility.AccessibilityWindowInfo
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import com.wilinz.accessbilityx.AccessibilityxService
-import com.wilinz.accessbilityx.goAccessibilityServiceSettings
-import kotlin.time.Duration
+import com.wilinz.devtools.App
 
 class AutoAccessibilityService : AccessibilityxService() {
 

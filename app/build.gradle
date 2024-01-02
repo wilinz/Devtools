@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.wilinz.devtools'
-    compileSdk 34
+    compileSdk 33
 
     defaultConfig {
-        applicationId "com.wilinz.fuckketangpai"
+        applicationId "com.wilinz.devtools"
         minSdk 21
-        targetSdk 34
+        targetSdk 33
         versionCode 2
         versionName "1.0.1"
 
@@ -37,7 +37,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.0'
+        kotlinCompilerExtensionVersion '1.2.0'
     }
     packagingOptions {
         resources {
@@ -47,8 +47,6 @@ android {
 }
 
 dependencies {
-
-    def lifecycle_version = "2.5.1"
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
@@ -62,22 +60,6 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
-    implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
 
     implementation 'com.github.wilinz:AccessibilityX:0.0.3'
-
-    // import Kotlin API client BOM
-    implementation platform('com.aallam.openai:openai-client-bom:3.6.1')
-
-    // define dependencies without versions
-    implementation 'com.aallam.openai:openai-client'
-    runtimeOnly 'io.ktor:ktor-client-okhttp'
-
-    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
-
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
-
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
-    implementation "com.google.accompanist:accompanist-permissions:0.29.1-alpha"
 }

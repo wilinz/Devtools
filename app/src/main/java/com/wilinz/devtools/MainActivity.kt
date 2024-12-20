@@ -4,7 +4,6 @@ package com.wilinz.devtools
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -24,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.wilinz.accessbilityx.device.screenHeight
 import com.wilinz.accessbilityx.device.screenWidth
@@ -58,7 +56,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         topBar = {
-                            SmallTopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) })
+                            TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) })
                         }
                     ) {
                         Column(
@@ -114,7 +112,7 @@ class MainActivity : ComponentActivity() {
             }
 
             auto?.untilFindOne {
-                it.text1 == "指针位置"
+                it.text1 == "指针位置" || it.text1 == "Pointer location"
             }
 
             job.cancel()
@@ -151,11 +149,11 @@ class MainActivity : ComponentActivity() {
             )
 
             auto?.untilFindOne {
-                it.text1 == "无线调试"
+                it.text1 == "无线调试" || it.text1 == "Wireless debugging"
             }?.ensureClick()
 
             val address = auto?.untilFindOne {
-                it.text1?.matches(ipv4Regex) ?: false
+                it.text1?.matches(ipv4Regex) == true
             }?.text1
 
             val clipboard =
@@ -197,7 +195,7 @@ class MainActivity : ComponentActivity() {
             )
 
             auto?.untilFindOne {
-                it.text1 == "无线调试"
+                it.text1 == "无线调试" || it.text1 == "Wireless debugging"
             }?.ensureClick()
 
         }
